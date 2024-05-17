@@ -1,7 +1,5 @@
 import express from "express";
-import ConnectToDatabase from "../db/mongo";
 import bcrypt from "bcrypt";
-const uri = process.env.MONGO_CONNECTION_STRING;
 
 const convertToHash = async (password: string) => {
   try {
@@ -28,14 +26,14 @@ const ComparePassword = async (
 const RegisterUser = async (
   req: express.Request,
   res: express.Response,
-  next: express.NextFunction
+  next: express.NextFunction,
+  db: any
 ) => {
   try {
     const { name, email, password } = req?.body;
     let hashedPassword = await convertToHash(password);
     const user = { name, email, password: hashedPassword };
 
-    const db = await ConnectToDatabase(uri || "");
     const userCollection = db.collection("users");
 
     const getUser = await userCollection.findOne({ email, password });
@@ -54,4 +52,11 @@ const RegisterUser = async (
   }
 };
 
-export default { RegisterUser };
+const LoginUser = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+  db: any
+) => {};
+
+export default { RegisterUser, LoginUser };

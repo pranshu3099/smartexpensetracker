@@ -4,13 +4,12 @@ import express, { NextFunction } from "express";
 interface ValidationResult {
   success: boolean;
   error?: {
-    issues?: {
+    issues: {
       message: string;
       path: string;
     }[];
-  }[];
+  };
 }
-
 type Schema = {
   body: any;
 };
@@ -26,14 +25,16 @@ const validate =
     });
     const failures = validations.filter((v) => !v.success);
     if (failures.length) {
-      const errors = failures.map((f) =>
-        f.error?.map((errorItem) => {
-          errorItem?.issues?.map((i) => ({
-            message: i.message,
-            path: i.path,
-          }));
-        })
-      );
+      const errors = failures.map((f) => {
+        let err = f?.error;
+        let issues = err?.issues;
+        let validationerr = issues?.map((i) => ({
+          message: i.message,
+          path: i.path,
+        }));
+
+        return validationerr;
+      });
 
       return res.status(400).send(errors);
     }

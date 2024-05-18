@@ -21,7 +21,11 @@ router.post(
   }
 );
 
-router.post("/v1/user/login", (req, res, next) => {
-  UserController.LoginUser(req, res, next, db);
-});
+router.post(
+  "/v1/user/login",
+  validate({ body: schema?.LoginSchema }),
+  (req, res, next) => {
+    UserController.LoginUser(req, res, next, db);
+  }
+);
 export default router;

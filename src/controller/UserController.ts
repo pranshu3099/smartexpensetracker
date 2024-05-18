@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
-
+import jwt from "jsonwebtoken";
+const jwtSecret = process.env.JWT_SECRET;
 const convertToHash = async (password: string) => {
   try {
     const salt = await bcrypt.genSalt(10);
@@ -52,11 +53,39 @@ const RegisterUser = async (
   }
 };
 
-const LoginUser = (
+const LoginUser = async (
   req: express.Request,
   res: express.Response,
   next: express.NextFunction,
   db: any
-) => {};
+) => {
+  try {
+    const { email, password } = req?.body;
+    const userCollection = db.collection("users");
+    const getUser = await userCollection.findOne({ email });
+    let storedPassword = getUser?.password;
+    if (getUser) {
+      let checkForPassword = await ComparePassword(storedPassword, password);
+      if (!checkForPassword) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      } else {
+        const token = jwt.sign(
+          {
+            userID: getUser?._id,
+          },
+          jwtSecret || ""
+        );
+        return res
+          .status(200)
+          .json({ message: "successfully loggedin", bearer_token: token });
+      }
+    } else {
+      return res
+        .status(404)
+        .json({ error: "conflict", message: "User does not exists" });
+    }
+    next();
+  } catch (err) {}
+};
 
 export default { RegisterUser, LoginUser };

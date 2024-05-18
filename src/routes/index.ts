@@ -3,7 +3,6 @@ import UserController from "../controller/UserController";
 import validate from "../middleware/validate";
 import schema from "../schema/schema";
 import ConnectToDatabase from "../db/mongo";
-require("dotenv").config();
 const uri = process.env.MONGO_CONNECTION_STRING;
 const router = express.Router();
 let db: any;

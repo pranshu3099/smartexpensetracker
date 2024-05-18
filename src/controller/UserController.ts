@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+require("dotenv").config();
 const secretKey = process.env.JWT_SECRET;
 const convertToHash = async (password: string) => {
   try {
@@ -78,10 +79,15 @@ const LoginUser = async (
             expiresIn: "12h",
           }
         );
+        let user = {
+          name: existingUser?.name,
+          email: existingUser?.email,
+          id: existingUser?._id,
+        };
         return res.status(200).json({
           message: "successfully loggedin",
           Authorization: token,
-          user: existingUser,
+          userdata: user,
         });
       }
     } else {
@@ -89,8 +95,10 @@ const LoginUser = async (
         .status(404)
         .json({ error: "conflict", message: "User does not exists" });
     }
-    next();
-  } catch (err) {}
+  } catch (err) {
+    console.error("Error registering user:", err);
+    res.status(500).json({ message: "internal server error" });
+  }
 };
 
 export default { RegisterUser, LoginUser };

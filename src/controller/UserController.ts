@@ -73,6 +73,8 @@ const LoginUser = async (
         const token = jwt.sign(
           {
             userID: existingUser?._id,
+            name: existingUser?.name,
+            email: existingUser?.email,
           },
           secretKey || "",
           {

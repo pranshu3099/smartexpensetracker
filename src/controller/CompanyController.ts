@@ -6,8 +6,15 @@ const RegisterCompanyData = async (
   next: express.NextFunction,
   db: any
 ) => {
-  const { company, skills, experience, qualification, position, subscribed } =
-    req?.body;
+  const {
+    company,
+    skills,
+    experience,
+    qualification,
+    position,
+    subscribed,
+    email,
+  } = req?.body;
   try {
     let data = {
       company,
@@ -16,6 +23,7 @@ const RegisterCompanyData = async (
       qualification,
       position,
       subscribed,
+      email,
     };
     const result = await db.collection("company").insertOne(data);
     return res.status(200).json({ message: "successfully inserted" });

@@ -12,10 +12,6 @@ const ConnectToDatabase = async (uri: string) => {
       },
     });
     await client.connect();
-
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
     return client.db("cluster0");
   } catch (err) {
     console.error("Error connecting to MongoDB:", err);

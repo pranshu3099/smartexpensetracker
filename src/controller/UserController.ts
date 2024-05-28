@@ -43,7 +43,6 @@ const RegisterUser = async (
       return res.status(409).json({ message: "User allready exists" });
     } else {
       const result = await userCollection.insertOne(user);
-      console.log(`User inserted with _id: ${result.insertedId}`);
       return res
         .status(201)
         .json({ message: "User registered successfully", result });

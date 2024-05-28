@@ -21,5 +21,10 @@ const LoginSchema = z.object({
     .regex(regexPatterns?.emailRegex, { message: "Invalid email" }),
 });
 
-const schema = { registerSchema, LoginSchema };
+const ExpenseSchema = z.object({
+  email: string()
+    .max(100)
+    .regex(regexPatterns?.emailRegex, { message: "Invalid email" }),
+});
+const schema = { registerSchema, LoginSchema, ExpenseSchema };
 export default schema;

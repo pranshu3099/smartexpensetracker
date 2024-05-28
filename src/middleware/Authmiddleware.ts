@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 const secretKey = process.env.JWT_SECRET || "";
-import express from "express";
+import express, { NextFunction } from "express";
 import { customRequest } from "../types/types";
+import axios from "axios";
 
 const verifyToken: any = (
   req: customRequest,
@@ -30,4 +31,29 @@ const verifyToken: any = (
   }
 };
 
-export default verifyToken;
+const OauthValidation = async (
+  req: customRequest,
+  res: express.Response,
+  next: NextFunction
+) => {
+  let userData;
+  try {
+    const token = req.cookies.get("github-jwt");
+    if (token) {
+      const user = await axios.get("https://api.github.com/user", {
+        headers: {
+          Authorization: `token ${token}`,
+          accept: "application/json",
+        },
+      });
+      userData = user.data;
+    }
+  } catch (err: any) {
+    console.log(err);
+    console.error("Error fetching user data from GitHub API:", err.message);
+  }
+  req.userData = userData;
+  next();
+};
+
+export default { verifyToken, OauthValidation };

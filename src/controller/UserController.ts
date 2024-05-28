@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { getDb } from "../db/connection";
 require("dotenv").config();
 const secretKey = process.env.JWT_SECRET;
 const convertToHash = async (password: string) => {
@@ -28,14 +29,13 @@ const ComparePassword = async (
 const RegisterUser = async (
   req: express.Request,
   res: express.Response,
-  next: express.NextFunction,
-  db: any
+  next: express.NextFunction
 ) => {
   try {
     const { name, email, password } = req?.body;
     let hashedPassword = await convertToHash(password);
     const user = { name, email, password: hashedPassword };
-
+    const db = getDb();
     const userCollection = db.collection("users");
 
     const getUser = await userCollection.findOne({ email, password });
@@ -56,11 +56,11 @@ const RegisterUser = async (
 const LoginUser = async (
   req: express.Request,
   res: express.Response,
-  next: express.NextFunction,
-  db: any
+  next: express.NextFunction
 ) => {
   try {
     const { email, password } = req?.body;
+    const db = getDb();
     const userCollection = db.collection("users");
     const existingUser = await userCollection.findOne({ email });
     let storedPassword = existingUser?.password;

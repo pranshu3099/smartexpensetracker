@@ -1,10 +1,11 @@
 import express from "express";
 import UserController from "../controller/UserController";
-import TaskController from "../controller/TaskController";
+import ExpenseController from "../controller/ExpenseController";
 import validate from "../middleware/validate";
 import schema from "../schema/schema";
 import verifyToken from "../middleware/Authmiddleware";
 import { customRequest } from "../types/types";
+import OauthController from "../controller/OauthController";
 const router = express.Router();
 
 router.post(
@@ -21,9 +22,12 @@ router.post(
 );
 
 router.post(
-  "/v1/user/addexpenseitem",
+  "/v1/user/addexpensedata",
   validate({ body: schema.ExpenseSchema }),
-  TaskController.AddExpenseData
+  ExpenseController.AddExpenseData
 );
+
+router.get("/v1/user/getexpensedata/:email", ExpenseController.getExpenseData);
+router.get("/api/auth/github", OauthController.githubAuthHandler);
 
 export default router;

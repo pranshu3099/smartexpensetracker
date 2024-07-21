@@ -2,6 +2,7 @@ import axios from "axios";
 import express from "express";
 import querystring from "querystring";
 import { customRequest } from "../types/types";
+import { getDb } from "../db/connection";
 const getGithubuser = async (code: any) => {
   try {
     const githubToken = await axios
@@ -21,7 +22,12 @@ const getGithubuser = async (code: any) => {
           Authorization: `Bearer ${access_token}`,
         },
       })
-      .then((res) => res.data);
+      .then((res) => {
+        return res;
+      })
+      .then((data) => {
+        return data;
+      });
     return { github_user, access_token };
   } catch (err) {
     console.log(err);
@@ -31,8 +37,7 @@ const getGithubuser = async (code: any) => {
 const githubAuthHandler = async (
   req: express.Request,
   res: express.Response,
-  next: express.NextFunction,
-  db: any
+  next: express.NextFunction
 ) => {
   try {
     const code = req.query.code;
@@ -41,29 +46,33 @@ const githubAuthHandler = async (
       throw new Error("code not found");
     } else {
       const { github_user, access_token }: any = await getGithubuser(code);
-      const { email, password } = github_user;
+      const user_data = await github_user;
+      const { data } = user_data;
+
+      const { email, password } = data;
       const user = {
         email: email,
         password: password ? password : "",
       };
+      const db = getDb();
       const userCollection = db.collection("users");
-      const getUser = await userCollection.findOne({ email });
-      if (getUser) {
+      let result = await userCollection.findOne({ email });
+      if (result) {
         return res.status(409).json({ message: "User allready exists" });
       } else {
-        const result = await userCollection.insertOne(user);
-        const querystring = encodeURIComponent(JSON.stringify(result));
-        const sixMonthsFromNow = new Date();
-        sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
-        req.cookies.set("github-jwt", access_token, {
-          httpOnly: true,
-          maxAge: 15552000 * 1000,
-        });
-
-        res
-          .status(303)
-          .redirect(`${process.env.FRONTEND_URL}/${path}?data=${querystring}`);
+        result = await userCollection.insertOne(user);
       }
+      const querystring = encodeURIComponent(JSON.stringify(result));
+      const sixMonthsFromNow = new Date();
+      sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+      req.cookies.set("github-jwt", access_token, {
+        httpOnly: true,
+        maxAge: 15552000 * 1000,
+      });
+
+      res
+        .status(303)
+        .redirect(`${process.env.FRONTEND_URL}/${path}?data=${querystring}`);
     }
   } catch (err) {
     console.log(err);

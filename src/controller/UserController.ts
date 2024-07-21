@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { getDb } from "../db/connection";
+import utils from "../utils/utils";
 require("dotenv").config();
 const secretKey = process.env.JWT_SECRET;
 const convertToHash = async (password: string) => {
@@ -38,14 +39,19 @@ const RegisterUser = async (
     const db = getDb();
     const userCollection = db.collection("users");
 
-    const getUser = await userCollection.findOne({ email, password });
+    const getUser = await utils.getUser(email);
     if (getUser) {
       return res.status(409).json({ message: "User allready exists" });
     } else {
       const result = await userCollection.insertOne(user);
+      const user_data = {
+        name: name,
+        email: email,
+        id: result?.insertedId,
+      };
       return res
         .status(201)
-        .json({ message: "User registered successfully", result });
+        .json({ message: "User registered successfully", user_data });
     }
   } catch (err) {
     console.error("Error registering user:", err);
@@ -60,9 +66,7 @@ const LoginUser = async (
 ) => {
   try {
     const { email, password } = req?.body;
-    const db = getDb();
-    const userCollection = db.collection("users");
-    const existingUser = await userCollection.findOne({ email });
+    const existingUser = await utils.getUser(email);
     let storedPassword = existingUser?.password;
     if (existingUser) {
       let checkForPassword = await ComparePassword(storedPassword, password);

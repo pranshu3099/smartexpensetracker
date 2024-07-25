@@ -45,7 +45,6 @@ const getExpenseData = async (
 ) => {
   try {
     const { email } = req?.params;
-    console.log(email);
     const getData = await utils.yourExpenseData(email);
 
     return res.status(200).json({ message: "success", getData });

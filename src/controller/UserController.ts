@@ -33,13 +33,13 @@ const RegisterUser = async (
   next: express.NextFunction
 ) => {
   try {
-    const { name, email, password } = req?.body;
+    const { name, email, password, income_per_month } = req?.body;
     let hashedPassword = await convertToHash(password);
-    const user = { name, email, password: hashedPassword };
+    const user = { name, email, password: hashedPassword, income_per_month };
     const db = getDb();
     const userCollection = db.collection("users");
 
-    const getUser = await utils.getUser(email);
+    const getUser = await utils.getUser(email, {});
     if (getUser) {
       return res.status(409).json({ message: "User allready exists" });
     } else {
@@ -66,7 +66,7 @@ const LoginUser = async (
 ) => {
   try {
     const { email, password } = req?.body;
-    const existingUser = await utils.getUser(email);
+    const existingUser = await utils.getUser(email, {});
     let storedPassword = existingUser?.password;
     if (existingUser) {
       let checkForPassword = await ComparePassword(storedPassword, password);

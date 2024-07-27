@@ -7,11 +7,15 @@ const yourExpenseData = async (email: string) => {
   return getData;
 };
 
-const getUser = async (email: string) => {
+const getUser = async (email: string, user_id: object) => {
   const db = getDb();
-
   const userCollection = db.collection("users");
-  const existingUser = await userCollection.findOne({ email });
+  let existingUser = [];
+  if (email.length) {
+    existingUser = await userCollection.findOne({ email });
+  } else {
+    existingUser = await userCollection.findOne(user_id);
+  }
   return existingUser;
 };
 

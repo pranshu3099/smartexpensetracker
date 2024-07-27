@@ -27,6 +27,11 @@ router.post(
   ExpenseController.AddExpenseData
 );
 
+router.get(
+  "/v1/user/monthly-expenses/:userId/:year/:month",
+  ExpenseController.ExpensesAnalysisData
+);
+
 router.get("/v1/user/getexpensedata/:email", ExpenseController.getExpenseData);
 router.get("/api/auth/github", OauthController.githubAuthHandler);
 

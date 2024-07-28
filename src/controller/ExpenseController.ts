@@ -91,6 +91,7 @@ const ExpensesAnalysisData = async (
 
     const expenses_data = expenses.map((expense: Expense) => {
       return {
+        [expense.category + "_expense"]: expense?.amount,
         amount: expense?.amount,
         month: utils.getMonth(expense.timeStamp),
       };

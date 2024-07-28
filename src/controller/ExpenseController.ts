@@ -1,12 +1,13 @@
 import express from "express";
 import { getDb } from "../db/connection";
 import utils from "../utils/utils";
-import { timeStamp } from "console";
 import { ObjectId } from "mongodb";
 
-type Expense = {
+interface Expense {
   amount: number;
-};
+  category: string;
+  timeStamp: Date;
+}
 
 const AddExpenseData = async (
   req: express.Request,
@@ -70,14 +71,14 @@ const ExpensesAnalysisData = async (
   try {
     let { userId, year, month } = req?.params;
     const db = getDb();
-    const startDate = new Date(Number(year), Number(month) - 1, 1);
-    const endDate = new Date(Number(year), Number(month), 0);
+    const startDate = new Date(Number(year), 0, 1);
+    const currentDate = new Date(Number(year), Number(month), 1);
 
     const userCollection = db.collection("expense");
     const expenses = await userCollection
       .find({
         user_id: new ObjectId(userId),
-        timeStamp: { $gte: startDate, $lt: endDate },
+        timeStamp: { $gte: startDate, $lt: currentDate },
       })
       .toArray();
     const { user_id } = expenses?.[0];
@@ -87,15 +88,26 @@ const ExpensesAnalysisData = async (
       (acc: number, expense: Expense) => acc + Number(expense.amount),
       0
     );
+
+    const expenses_data = expenses.map((expense: Expense) => {
+      return {
+        amount: expense?.amount,
+        month: utils.getMonth(expense.timeStamp),
+      };
+    });
+
     const IncomePerMOnth = income_per_month;
     const remainingBudget = IncomePerMOnth - totalExpenses;
     const daysInMonth = new Date(Number(year), Number(month), 0).getDate();
-    const dailyBudget = remainingBudget / daysInMonth;
-    const data = {
-      totalExpenses,
-      remainingBudget,
-      dailyBudget,
-    };
+    const dailyBudget = Math.floor(remainingBudget / daysInMonth);
+    const data = [
+      {
+        totalExpenses,
+        remainingBudget,
+        dailyBudget,
+        expenses_data,
+      },
+    ];
     return res.status(200).json({ message: "success", data });
   } catch (err) {
     console.log(err);

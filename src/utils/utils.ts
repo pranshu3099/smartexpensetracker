@@ -18,5 +18,7 @@ const getUser = async (email: string, user_id: object) => {
   }
   return existingUser;
 };
-
-export default { yourExpenseData, getUser };
+export const getMonth = (date: Date) => {
+  return new Date(String(date)).getMonth();
+};
+export default { yourExpenseData, getUser, getMonth };
